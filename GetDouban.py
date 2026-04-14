@@ -20,7 +20,7 @@ with open("content.txt", "w", encoding="utf-8") as f:
     f.write("Top 250 电影列表\n")
 
     for start_num in films:
-        # 随机延迟，避免被反爬
+        # 随机延迟， 避免被反爬
         time.sleep(random.uniform(1, 3))
         
         response = requests.get(f"https://movie.douban.com/top250?start={start_num}", headers=headers)
