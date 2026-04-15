@@ -27,31 +27,36 @@ with open("content.txt", "w", encoding="utf-8") as f:
         current_url = f"https://movie.douban.com/top250?start={start_num}&filter="
         headers = get_headers(current_url)
         
-        response = requests.get(current_url, headers=headers)
-        
-        print(f"请求状态码: {response.status_code}")
-        
-        if response.ok:
-            soup = BeautifulSoup(response.text, "html.parser")
+        try:
+            response = requests.get(current_url, headers=headers, timeout=30)
             
-            if soup.title and '豆瓣电影 Top 250' in soup.title.text.strip():
-                all_titles = soup.find_all("span", attrs={"class": "title"})
-                count_on_page = 0
+            print(f"请求状态码: {response.status_code}")
+            
+            if response.ok:
+                soup = BeautifulSoup(response.text, "html.parser")
                 
-                for title in all_titles:
-                    movie_title = title.text.strip()
-                    if movie_title and not movie_title.startswith("/"):
-                        f.write(f"No.{No} {movie_title}\n")
-                        No += 1
-                        count_on_page += 1
-                
-                f.flush()
-                print(f"成功获取第 {start_num//25 + 1} 页，本页 {count_on_page} 部，共 {No-1} 部电影")
+                if soup.title and '豆瓣电影 Top 250' in soup.title.text.strip():
+                    all_titles = soup.find_all("span", attrs={"class": "title"})
+                    count_on_page = 0
+                    
+                    for title in all_titles:
+                        movie_title = title.text.strip()
+                        if movie_title and not movie_title.startswith("/"):
+                            f.write(f"No.{No} {movie_title}\n")
+                            No += 1
+                            count_on_page += 1
+                    
+                    f.flush()
+                    print(f"成功获取第 {start_num//25 + 1} 页，本页 {count_on_page} 部，共 {No-1} 部电影")
+                else:
+                    print(f"页面不正确：{soup.title.text.strip() if soup.title else '无标题'}")
+                    print("可能被反爬，尝试增加延迟")
+                    time.sleep(10)
             else:
-                print(f"页面不正确：{soup.title.text.strip() if soup.title else '无标题'}")
-                print("可能被反爬，尝试增加延迟")
+                print("请求失败，状态码：", response.status_code)
                 time.sleep(10)
-        else:
-            print("请求失败，状态码：", response.status_code)
-            time.sleep(10)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.RequestException) as e:
+            print(f"网络异常: {str(e)}")
+            print("尝试增加延迟后重试...")
+            time.sleep(15)
     
