@@ -6,6 +6,25 @@ from utils import logger, is_within_days
 from config import BASE_URL
 
 
+def extract_category(html, is_detail=False):
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    if is_detail:
+        keywords_meta = soup.find('meta', {'name': 'keywords'})
+        if keywords_meta:
+            content = keywords_meta.get('content', '')
+            keywords = [k.strip() for k in content.split(',') if k.strip()]
+            if len(keywords) >= 2:
+                return keywords[1]
+    else:
+        wjj_span = soup.find('span', class_='wjj')
+        if wjj_span:
+            text = wjj_span.get_text(strip=True)
+            return text.strip('[]')
+    
+    return '其他'
+
+
 def extract_date(text):
     date_patterns = [
         r'(\d{4})[-/](\d{1,2})[-/](\d{1,2})',
@@ -30,34 +49,42 @@ def parse_announcement_list(html, quiet=False):
     if not quiet:
         logger.info("开始解析公告列表...")
     
-    all_links = soup.find_all('a', href=True)
+    news_items = soup.find_all('li', class_='news')
     if not quiet:
-        logger.info(f"找到 {len(all_links)} 个链接")
+        logger.info(f"找到 {len(news_items)} 个公告项")
     
-    content_links = []
-    for a in all_links:
-        href = a.get('href', '')
-        if 'content.jsp' in href:
-            content_links.append(a)
-    
-    if not quiet:
-        logger.info(f"找到 {len(content_links)} 个 content.jsp 链接")
-    
-    for a in content_links:
+    for item in news_items:
         try:
-            title = a.get_text(strip=True)
+            a_tag = item.find('a', href=True)
+            if not a_tag:
+                continue
+                
+            href = a_tag.get('href', '')
+            if 'content.jsp' not in href and 'info/' not in href:
+                continue
+            
+            title = a_tag.get_text(strip=True)
             if not title or len(title) < 5:
                 continue
             
-            link = a['href']
+            link = href
             if link and not link.startswith('http'):
                 link = urljoin(BASE_URL, link)
             
-            parent_text = a.parent.get_text() if a.parent else ''
-            pub_date = extract_date(parent_text)
+            category = '其他'
+            wjj_span = item.find('span', class_='wjj')
+            if wjj_span:
+                category_text = wjj_span.get_text(strip=True)
+                category = category_text.strip('[]')
+            
+            pub_date = ''
+            date_span = item.find('span', class_='arti_bs')
+            if date_span:
+                pub_date = date_span.get_text(strip=True)
             
             if not pub_date:
-                pub_date = extract_date(a.get_text())
+                parent_text = item.get_text()
+                pub_date = extract_date(parent_text)
             
             if not pub_date:
                 pub_date = ''
@@ -66,7 +93,8 @@ def parse_announcement_list(html, quiet=False):
                 announcements.append({
                     'title': title,
                     'link': link,
-                    'date': pub_date
+                    'date': pub_date,
+                    'category': category
                 })
                 if not quiet:
                     logger.info(f"找到公告: {title} ({pub_date})")
@@ -79,16 +107,33 @@ def parse_announcement_list(html, quiet=False):
     
     if not announcements:
         logger.warning("未找到符合条件的公告，尝试使用全部链接...")
+        all_links = soup.find_all('a', href=True)
+        content_links = []
+        for a in all_links:
+            href = a.get('href', '')
+            if 'content.jsp' in href or 'info/' in href:
+                content_links.append(a)
+        
         for a in content_links[:10]:
             title = a.get_text(strip=True)
             if len(title) > 5:
                 link = a['href']
                 if link and not link.startswith('http'):
                     link = urljoin(BASE_URL, link)
+                
+                category = '其他'
+                wjj_span = a.find_parent('li', class_='news')
+                if wjj_span:
+                    wjj = wjj_span.find('span', class_='wjj')
+                    if wjj:
+                        category_text = wjj.get_text(strip=True)
+                        category = category_text.strip('[]')
+                
                 announcements.append({
                     'title': title,
                     'link': link,
-                    'date': ''
+                    'date': '',
+                    'category': category
                 })
                 if not quiet:
                     logger.info(f"找到链接: {title}")
@@ -105,8 +150,18 @@ def parse_announcement_detail(html, url):
         'title': '',
         'content': '',
         'attachments': [],
-        'publish_date': ''
+        'publish_date': '',
+        'category': ''
     }
+    
+    category = '其他'
+    keywords_meta = soup.find('meta', {'name': 'keywords'})
+    if keywords_meta:
+        content = keywords_meta.get('content', '')
+        keywords = [k.strip() for k in content.split(',') if k.strip()]
+        if len(keywords) >= 2:
+            category = keywords[1]
+    result['category'] = category
     
     try:
         date_tag = soup.find('span', class_='arti_update')

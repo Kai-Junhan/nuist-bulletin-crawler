@@ -21,7 +21,11 @@ def save_announcement(announcement, detail, quiet=False):
         safe_title = safe_title.replace('“', '').replace('”', '').replace('"', '')
         safe_title = safe_title.replace('（', '(').replace('）', ')')
         
-        filename = f"{date_str}_{safe_title}.md"
+        category = detail.get('category', '')
+        if not category:
+            category = announcement.get('category', '其他')
+        
+        filename = f"{date_str}_【{category}】{safe_title}.md"
         
         counter = 1
         base_filename = filename

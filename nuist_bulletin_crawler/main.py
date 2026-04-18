@@ -7,26 +7,26 @@ from utils import logger
 
 
 def main():
-    print("=" * 60)
-    print("信息公告栏爬虫启动")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("信息公告栏爬虫启动")
+    logger.info("=" * 60)
     
-    print(f"正在获取公告列表: {LIST_URL}")
+    logger.info(f"正在获取公告列表: {LIST_URL}")
     list_response = get_page(LIST_URL, quiet=True)
     
     if not list_response:
-        print("\n错误: 无法获取公告列表，程序退出")
+        logger.error("\n错误: 无法获取公告列表，程序退出")
         return
     
     announcements = parse_announcement_list(list_response.text, quiet=True)
     
     if not announcements:
-        print("\n警告: 未找到符合条件的公告")
+        logger.warning("\n警告: 未找到符合条件的公告")
         return
     
-    print(f"\n共找到 {len(announcements)} 条近期公告")
-    print("\n开始爬取公告详情...")
-    print("-" * 60)
+    logger.info(f"\n共找到 {len(announcements)} 条近期公告")
+    logger.info("\n开始爬取公告详情...")
+    logger.info("-" * 60)
     
     saved_files = []
     pbar = tqdm(
@@ -55,17 +55,17 @@ def main():
                 saved_files.append(ann)
     
     pbar.close()
-    print("-" * 60)
+    logger.info("-" * 60)
     
     if saved_files:
-        print(f"\n成功保存 {len(saved_files)} 条公告")
+        logger.info(f"\n成功保存 {len(saved_files)} 条公告")
         generate_summary(saved_files, quiet=True)
     else:
-        print("\n警告: 未保存任何公告")
+        logger.warning("\n警告: 未保存任何公告")
     
-    print("\n" + "=" * 60)
-    print("  爬虫执行完成")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("  爬虫执行完成")
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":
