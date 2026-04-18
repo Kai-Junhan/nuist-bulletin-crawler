@@ -6,7 +6,16 @@ from config import ANNOUNCEMENTS_DIR, SUMMARY_FILE
 
 def save_announcement(announcement, detail):
     try:
-        date_str = announcement['date'].replace('/', '-')
+        final_date = detail.get('publish_date', '')
+        
+        if not final_date:
+            final_date = announcement['date']
+        
+        if not final_date:
+            from datetime import datetime
+            final_date = datetime.now().strftime('%Y-%m-%d')
+        
+        date_str = final_date.replace('/', '-')
         safe_title = sanitize_filename(announcement['title'])
         
         safe_title = safe_title.replace('“', '').replace('”', '').replace('"', '')
@@ -25,7 +34,7 @@ def save_announcement(announcement, detail):
             counter += 1
         
         content = f"# {announcement['title']}\n\n"
-        content += f"**发布时间**: {announcement['date']}\n\n"
+        content += f"**发布时间**: {final_date}\n\n"
         content += f"**原始链接**: {announcement['link']}\n\n"
         
         if detail['content']:

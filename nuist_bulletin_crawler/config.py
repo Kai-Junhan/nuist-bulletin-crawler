@@ -3,7 +3,7 @@ import os
 BASE_URL = "https://bulletin.nuist.edu.cn"
 LIST_URL = BASE_URL
 
-DAYS_TO_KEEP = 15
+DAYS_TO_KEEP = 7
 
 REQUEST_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',

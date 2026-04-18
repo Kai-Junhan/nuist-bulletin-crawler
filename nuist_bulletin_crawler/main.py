@@ -33,6 +33,10 @@ def main():
         
         if detail_response:
             detail = parse_announcement_detail(detail_response.text, ann['link'])
+            
+            if detail.get('publish_date'):
+                ann['date'] = detail['publish_date']
+            
             filepath = save_announcement(ann, detail)
             if filepath:
                 saved_files.append(ann)

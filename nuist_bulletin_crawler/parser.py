@@ -24,7 +24,7 @@ def extract_date(text):
 
 
 def parse_announcement_list(html):
-    soup = BeautifulSoup(html, 'html.parser', from_encoding='utf-8')
+    soup = BeautifulSoup(html, 'html.parser')
     announcements = []
     
     logger.info("开始解析公告列表...")
@@ -57,7 +57,7 @@ def parse_announcement_list(html):
                 pub_date = extract_date(a.get_text())
             
             if not pub_date:
-                pub_date = datetime.now().strftime('%Y-%m-%d')
+                pub_date = ''
             
             if is_within_days(pub_date):
                 announcements.append({
@@ -84,7 +84,7 @@ def parse_announcement_list(html):
                 announcements.append({
                     'title': title,
                     'link': link,
-                    'date': datetime.now().strftime('%Y-%m-%d')
+                    'date': ''
                 })
                 logger.info(f"找到链接: {title}")
     
@@ -93,15 +93,21 @@ def parse_announcement_list(html):
 
 
 def parse_announcement_detail(html, url):
-    soup = BeautifulSoup(html, 'html.parser', from_encoding='utf-8')
+    soup = BeautifulSoup(html, 'html.parser')
     
     result = {
         'title': '',
         'content': '',
-        'attachments': []
+        'attachments': [],
+        'publish_date': ''
     }
     
     try:
+        date_tag = soup.find('span', class_='arti_update')
+        if date_tag:
+            date_text = date_tag.get_text(strip=True)
+            result['publish_date'] = extract_date(date_text)
+        
         title_tag = soup.find('h1')
         if title_tag:
             result['title'] = title_tag.get_text(strip=True)
