@@ -16,6 +16,7 @@
 ```
 nuist_bulletin_crawler/
 ├── main.py              # 主程序入口
+├── menu.py             # 交互式菜单系统
 ├── clean_data.py         # 数据清理脚本
 ├── config.py            # 配置文件
 ├── requester.py         # 网页请求模块
@@ -38,13 +39,29 @@ pip install -r requirements.txt
 
 ## 使用方法
 
-### 运行爬虫
+### 方式一：交互式菜单系统（推荐）
+
+启动交互式菜单，通过数字选择功能：
+
+```bash
+python menu.py
+```
+
+菜单选项：
+- `0` - 退出系统
+- `1` - 配置设置：查看和修改config.py中的参数
+- `2` - 启动数据爬取：执行网络数据采集任务
+- `3` - 执行文件删除：安全删除data目录中的文件
+
+### 方式二：直接运行各模块
+
+#### 运行爬虫
 
 ```bash
 python main.py
 ```
 
-### 清理数据
+#### 清理数据
 
 如需清除data目录中的所有文件（保留目录结构），运行：
 
