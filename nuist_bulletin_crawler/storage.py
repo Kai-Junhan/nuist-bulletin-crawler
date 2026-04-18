@@ -4,7 +4,7 @@ from utils import logger, sanitize_filename, ensure_dir
 from config import ANNOUNCEMENTS_DIR, SUMMARY_FILE
 
 
-def save_announcement(announcement, detail):
+def save_announcement(announcement, detail, quiet=False):
     try:
         final_date = detail.get('publish_date', '')
         
@@ -49,7 +49,8 @@ def save_announcement(announcement, detail):
         with open(filepath, 'w', encoding='utf-8-sig') as f:
             f.write(content)
         
-        logger.info(f"保存公告: {filename}")
+        if not quiet:
+            logger.info(f"保存公告: {filename}")
         return filepath
         
     except Exception as e:
@@ -57,7 +58,7 @@ def save_announcement(announcement, detail):
         return None
 
 
-def generate_summary(announcements):
+def generate_summary(announcements, quiet=False):
     try:
         content = f"# 南京信息工程大学信息公告摘要\n\n"
         content += f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
@@ -72,7 +73,8 @@ def generate_summary(announcements):
         with open(SUMMARY_FILE, 'w', encoding='utf-8-sig') as f:
             f.write(content)
         
-        logger.info(f"生成摘要: {SUMMARY_FILE}")
+        if not quiet:
+            logger.info(f"生成摘要: {SUMMARY_FILE}")
         
     except Exception as e:
         logger.error(f"生成摘要失败: {e}")

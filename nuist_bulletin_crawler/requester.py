@@ -5,7 +5,7 @@ from utils import logger
 from config import REQUEST_HEADERS, REQUEST_TIMEOUT, REQUEST_RETRIES, REQUEST_DELAY
 
 
-def get_page(url, retries=REQUEST_RETRIES):
+def get_page(url, retries=REQUEST_RETRIES, quiet=False):
     for attempt in range(retries):
         try:
             delay = random.uniform(*REQUEST_DELAY)
@@ -20,7 +20,8 @@ def get_page(url, retries=REQUEST_RETRIES):
             
             response.encoding = 'utf-8'
             
-            logger.info(f"成功获取页面: {url}")
+            if not quiet:
+                logger.info(f"成功获取页面: {url}")
             return response
             
         except requests.exceptions.ConnectionError as e:

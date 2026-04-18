@@ -23,14 +23,16 @@ def extract_date(text):
     return ''
 
 
-def parse_announcement_list(html):
+def parse_announcement_list(html, quiet=False):
     soup = BeautifulSoup(html, 'html.parser')
     announcements = []
     
-    logger.info("开始解析公告列表...")
+    if not quiet:
+        logger.info("开始解析公告列表...")
     
     all_links = soup.find_all('a', href=True)
-    logger.info(f"找到 {len(all_links)} 个链接")
+    if not quiet:
+        logger.info(f"找到 {len(all_links)} 个链接")
     
     content_links = []
     for a in all_links:
@@ -38,7 +40,8 @@ def parse_announcement_list(html):
         if 'content.jsp' in href:
             content_links.append(a)
     
-    logger.info(f"找到 {len(content_links)} 个 content.jsp 链接")
+    if not quiet:
+        logger.info(f"找到 {len(content_links)} 个 content.jsp 链接")
     
     for a in content_links:
         try:
@@ -65,7 +68,8 @@ def parse_announcement_list(html):
                     'link': link,
                     'date': pub_date
                 })
-                logger.info(f"找到公告: {title} ({pub_date})")
+                if not quiet:
+                    logger.info(f"找到公告: {title} ({pub_date})")
             
             if len(announcements) >= 50:
                 break
@@ -86,9 +90,11 @@ def parse_announcement_list(html):
                     'link': link,
                     'date': ''
                 })
-                logger.info(f"找到链接: {title}")
+                if not quiet:
+                    logger.info(f"找到链接: {title}")
     
-    logger.info(f"共找到 {len(announcements)} 条公告")
+    if not quiet:
+        logger.info(f"共找到 {len(announcements)} 条公告")
     return announcements
 
 
